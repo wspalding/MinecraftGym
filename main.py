@@ -9,14 +9,17 @@ wandb.init(project='cartpol_test_1',
 # create env
 env = gym.make('CartPole-v0')
 env.reset()
-run = []
 
+# tracked values
+run_video = []
 total_reward = 0
+
+
 # main environment loop
 for _ in range(1000):
     #render screen
     screen = env.render(mode='rgb_array')
-    run.append(screen)
+    run_video.append(screen)
 
     # take a random action
     action = env.action_space.sample()
@@ -28,8 +31,7 @@ for _ in range(1000):
 
 # close env
 env.close()
-run = np.array(run).transpose(0,3,1,2)
-print(run.shape)
+run = np.array(run_video).transpose(0,3,1,2)
 
 wandb.log({"run": wandb.Video(run, fps=30, format="gif")})
 wandb.log({"total reward": total_reward})
