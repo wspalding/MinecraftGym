@@ -10,7 +10,7 @@ def create_CartPol_model_from_config(env_shape, action_shape, **kwargs):
     input_layer = Input(shape=env_shape)
     d1 = Dense(24, activation='relu')(input_layer)
     d2 = Dense(24, activation='relu')(d1)
-    output_layer = Dense(action_shape, activation='softmax')(d2)
+    output_layer = Dense(action_shape, activation='linear')(d2)
 
     model = Model(input_layer, output_layer, name='CartPol_model')
     
