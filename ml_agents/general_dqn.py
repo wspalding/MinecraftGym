@@ -5,8 +5,8 @@ from ml_models.cartpol_model import create_CartPol_model_from_config
 from collections import deque
 
 
-class CartPolDQNAgent():
-    def __init__(self, env, **kwargs):
+class GeneralDQNAgent():
+    def __init__(self, model_func, env, **kwargs):
         # get env info
         self.environment = env
         env_shape = env.observation_space.shape
@@ -14,7 +14,7 @@ class CartPolDQNAgent():
             # environment input and output shapes
 
         # load models
-        self.load_models(env_shape, action_shape, file=kwargs.get('model_file'))
+        self.load_model(model_func, env_shape, action_shape, file=kwargs.get('model_file'))
         self.target_update_count = 0
             # load models:
             # self.model is our main model used to make predictions
@@ -55,18 +55,11 @@ class CartPolDQNAgent():
             # target = reward + gamma * best_target_reward
             # model.fit(state, target)
 
-    def load_models(self, env_shape, action_shape, file=None):
+    def load_model(self, model_func, env_shape, action_shape, file=None):
         if file:
             self.model = load_model(file)
         else:
-            self.model = create_CartPol_model_from_config(env_shape, action_shape)
-
-        # # a copy of our model that we measure against
-        # if file:
-        #     self.target_model = load_model(file)
-        # else:
-        #     self.target_model = create_CartPol_model_from_config(env_shape, action_shape)
-        # self.target_model.set_weights(self.model.get_weights())
+            self.model = model_func(env_shape, action_shape)
 
     def get_action(self, state, explore=False):
         if explore and np.random.rand() <= self.exploration_rate:
@@ -77,7 +70,6 @@ class CartPolDQNAgent():
     def remember(self, memory_item):
         self.replay_memory.append(memory_item)
 
-
     def memory_replay(self, batch_size, **kwargs):
         if len(self.replay_memory) < batch_size or len(self.replay_memory) < self.min_experiences:
             # if we dont have enough memories to train from, dont do anything
@@ -87,24 +79,12 @@ class CartPolDQNAgent():
 
         sample_batch = random.sample(self.replay_memory, batch_size)
 
-        # for state, action, reward, next_state, done in sample_batch:
-        #     next_state = np.expand_dims(next_state, axis=0)
-        #     target = reward
-        #     if not done:
-        #       target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
-        #     target_f = self.model.predict(state)
-        #     target_f[0][action] = target
-        #     self.model.fit(state, target_f, epochs=training_epochs, verbose=0)
-
-        # states = np.squeeze(np.array([mi[0] for mi in sample_batch]))
         states, targets = self.calculate_targets(sample_batch, cur_epoch=kwargs.get('ce'))
 
         self.model.fit(np.squeeze(states), targets, epochs=training_epochs, verbose=0)
 
         self.exploration_rate = max(self.exploration_rate_min, 
                                     self.exploration_rate * self.exploration_rate_decay)
-
-
 
     def calculate_targets(self, sample_batch, cur_epoch=0):
         states = np.array([mi[0] for mi in sample_batch])
@@ -119,7 +99,6 @@ class CartPolDQNAgent():
         weighted_predictions = self.gamma * np.amax(self.model.predict(next_states), axis=1)
         for i in range(len(sample_batch)):
             t = predictions[i]
-            # TODO: test this
             if not dones[i]:
                 t[actions[i]] = rewards[i] + weighted_predictions[i]
             else:
@@ -127,36 +106,8 @@ class CartPolDQNAgent():
             targets.append(t)
         targets = np.array(targets)
 
-
-        # # the way that works for some reason
-        # targets2 = []
-        # for state, action, reward, next_state, done in sample_batch:
-        #     next_state = np.expand_dims(next_state, axis=0)
-        #     target = reward
-        #     if not done:
-        #       target = reward + self.gamma * np.amax(self.model.predict(next_state)[0])
-        #     target_f = self.model.predict(state)
-        #     target_f[0][action] = target
-        #     targets2.append(target_f)
-        # targets2 = np.squeeze(np.array(targets2))
-
-        # if(cur_epoch < 10):
-        # #     print("actions: ", actions)
-        # #     print("rewards: ", rewards)
-        # #     print("done?: ", dones)
-        #     for i in range(len(targets)):
-        #         print("targets  {}: ".format(i), targets[i])
-        #         print("targets2 {}: ".format(i) , targets2[i])
         return states, targets
             # rewards.shape = (batch_size,)
             # gamma.shape = scalar
             # self.target_model.predict(next_states).shape = (batch_size, num_actions)
             # targets.shape = (batch_size, num_actions)
-
-class MemoryItem:
-    def __init__(self, s, a, r, s2, d):
-        self.state = s
-        self.action = a
-        self.reward = r
-        self.next_state = s2
-        self.done = d
