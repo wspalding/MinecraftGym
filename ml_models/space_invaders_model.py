@@ -1,14 +1,21 @@
 import tensorflow as tf 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Dropout, Flatten, Input
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Input, Conv2D
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import Huber, MeanSquaredError
 # TODO from ml_metrics
 
-def create_CartPol_model_from_config(env_shape, action_shape, **kwargs):
+def create_SpaceInvaders_model(env_shape, action_shape, **kwargs):
     # Define layers
     input_layer = Input(shape=env_shape)
-    d1 = Dense(24, activation='relu')(input_layer)
+    c1 = Conv2D(16, (3,3), strides=(1,1), 
+                            padding='same', 
+                            activation='relu')(input_layer)
+    c2 = Conv2D(16, (3,3), strides=(1,1), 
+                            padding='same', 
+                            activation='relu')(c1)
+    fl = Flatten()(c2)
+    d1 = Dense(24, activation='relu')(fl)
     d2 = Dense(24, activation='relu')(d1)
     output_layer = Dense(action_shape, activation='linear')(d2)
 
@@ -32,5 +39,6 @@ def create_CartPol_model_from_config(env_shape, action_shape, **kwargs):
     optimizer = Adam(learning_rate=LR, beta_1=LR_decay1, beta_2=LR_decay2)
 
     model.compile(optimizer=optimizer, loss=loss, metrics=None)
+    print(model.summary())
     return model
 
