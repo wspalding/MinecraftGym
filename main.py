@@ -25,6 +25,8 @@ action_shape = env.action_space.n
 
 agent = general_dqn.GeneralDQNAgent(space_invaders_model.create_SpaceInvaders_model, env)
 
+model_save_file = '/space_invaders_1.h5'
+
 # main environment loop
 for i in range(config.epochs + 1):
     print(i)
@@ -57,8 +59,9 @@ for i in range(config.epochs + 1):
         observation = new_observation
 
         # log action
-        if(i % config.checkpoint_interval == 0):
-            wandb.log({"actions_{}".format(i): action})
+        # if(i % config.checkpoint_interval == 0):
+        #     wandb.log({"actions_{}".format(i): action})
+
         total_reward += reward
         episode_step += 1
 
@@ -67,11 +70,12 @@ for i in range(config.epochs + 1):
         run = np.array(run_video).transpose(0,3,1,2)
         wandb.log({"run_{}".format(i): wandb.Video(run, fps=30, format="gif")})
     wandb.log({"total reward": total_reward})
-    print("total reward: ", total_reward, step=i)
+    print("total reward: ", total_reward)
 
     # preform memory replay to train
     agent.memory_replay(config.batch_size, epochs=config.training_epochs, ce=i)
 
+    agent.model.save('saved_models' + model_save_file, save_format='h5')
 
 # close env
 env.close()
