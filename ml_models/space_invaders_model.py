@@ -8,15 +8,23 @@ from tensorflow.keras.losses import Huber, MeanSquaredError
 def create_SpaceInvaders_model(env_shape, action_shape, **kwargs):
     # Define layers
     input_layer = Input(shape=env_shape)
-    c1 = Conv2D(16, (3,3), strides=(1,1), 
+    c1 = Conv2D(16, (10,10), strides=(1,1), 
                             padding='same', 
                             activation='relu')(input_layer)
-    c2 = Conv2D(16, (3,3), strides=(1,1), 
+    c2 = Conv2D(32, (5,5), strides=(1,1), 
                             padding='same', 
                             activation='relu')(c1)
-    fl = Flatten()(c2)
-    d1 = Dense(24, activation='relu')(fl)
-    d2 = Dense(24, activation='relu')(d1)
+    c3 = Conv2D(64, (4,4), strides=(1,1), 
+                            padding='same', 
+                            activation='relu')(c2)
+    c4 = Conv2D(64, (3,3), strides=(1,1), 
+                            padding='same', 
+                            activation='relu')(c3)
+    fl = Flatten()(c4)
+    d1 = Dense(64, activation='relu')(fl)
+    d2 = Dense(64, activation='relu')(d1)
+    d2 = Dense(32, activation='relu')(d1)
+    d2 = Dense(32, activation='relu')(d1)
     output_layer = Dense(action_shape, activation='linear')(d2)
 
     model = Model(input_layer, output_layer, name='CartPol_model')
