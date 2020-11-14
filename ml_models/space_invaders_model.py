@@ -21,10 +21,10 @@ def create_SpaceInvaders_model(env_shape, action_shape, **kwargs):
                             padding='same', 
                             activation='relu')(c3)
     fl = Flatten()(c4)
-    d1 = Dense(64, activation='relu')(fl)
+    d1 = Dense(512, activation='relu')(fl)
+    d2 = Dense(1024, activation='relu')(d1)
+    d2 = Dense(512, activation='relu')(d1)
     d2 = Dense(64, activation='relu')(d1)
-    d2 = Dense(32, activation='relu')(d1)
-    d2 = Dense(32, activation='relu')(d1)
     output_layer = Dense(action_shape, activation='linear')(d2)
 
     model = Model(input_layer, output_layer, name='CartPol_model')

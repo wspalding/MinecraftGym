@@ -1,13 +1,16 @@
 import gym
 import wandb
 import numpy as np
+import os
 
 from ml_agents import general_dqn
 
 from ml_models import space_invaders_model
+from ml_models import cartpol_model
 
 # create env
 env = gym.make('SpaceInvaders-v0')
+# env = gym.make('CartPole-v1')
 env.reset()
 
 # init wandb and connect it to gym
@@ -27,6 +30,8 @@ agent = general_dqn.GeneralDQNAgent(space_invaders_model.create_SpaceInvaders_mo
 
 model_save_file = '/space_invaders_1.h5'
 
+best_run = 0
+
 # main environment loop
 for i in range(config.epochs + 1):
     print(i)
@@ -41,6 +46,7 @@ for i in range(config.epochs + 1):
     
     done = False
     while not done:
+    
         #render screen
         screen = env.render(mode='rgb_array')
 
@@ -65,17 +71,28 @@ for i in range(config.epochs + 1):
         total_reward += reward
         episode_step += 1
 
-    # log values and video
+    log_video = False
+    if total_reward > best_run:
+        best_run = total_reward
+        log_video = True
     if(i % config.checkpoint_interval == 0):
+        log_video = True
+
+    # log values and video
+    if(log_video):
         run = np.array(run_video).transpose(0,3,1,2)
         wandb.log({"run_{}".format(i): wandb.Video(run, fps=30, format="gif")})
+
+        if(not os.path.isdir('saved_models')):
+            os.makedirs('saved_models')
+
+        agent.model.save('saved_models' + model_save_file, save_format='h5')
+
     wandb.log({"total reward": total_reward})
     print("total reward: ", total_reward)
 
     # preform memory replay to train
     agent.memory_replay(config.batch_size, epochs=config.training_epochs, ce=i)
-
-    agent.model.save('saved_models' + model_save_file, save_format='h5')
 
 # close env
 env.close()
