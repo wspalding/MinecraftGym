@@ -3,15 +3,17 @@ import wandb
 import numpy as np
 
 from ml_agents import general_dqn
+from ml_agents import cartpol_A3C
 
 from ml_models import space_invaders_model
+from ml_models import cartpol_model
 
 # create env
-env = gym.make('SpaceInvaders-v0')
+env = gym.make('CartPol-v1')
 env.reset()
 
 # init wandb and connect it to gym
-wandb.init(project='space_inavders_1',
+wandb.init(project='CartPol_2',
             monitor_gym=True)
 config = wandb.config
 # set config variable
@@ -23,7 +25,7 @@ config.training_epochs = 1
 env_shape = env.observation_space.shape
 action_shape = env.action_space.n
 
-agent = general_dqn.GeneralDQNAgent(space_invaders_model.create_SpaceInvaders_model, env)
+agent = cartpol_A3C(cartpol_model.create_CartPol_model_from_config, env)
 
 # main environment loop
 for i in range(config.epochs + 1):
