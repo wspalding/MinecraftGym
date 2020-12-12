@@ -17,12 +17,12 @@ def create_SpaceInvaders_model(env_shape, action_shape, **kwargs):
     c3 = Conv2D(64, (4,4), strides=(1,1), 
                             padding='same', 
                             activation='relu')(c2)
-    c4 = Conv2D(64, (3,3), strides=(1,1), 
+    c4 = Conv2D(16, (3,3), strides=(1,1), 
                             padding='same', 
                             activation='relu')(c3)
     fl = Flatten()(c4)
-    d1 = Dense(512, activation='relu')(fl)
-    d2 = Dense(1024, activation='relu')(d1)
+    d1 = Dense(64, activation='relu')(fl)
+    d2 = Dense(256, activation='relu')(d1)
     d2 = Dense(512, activation='relu')(d1)
     d2 = Dense(64, activation='relu')(d1)
     output_layer = Dense(action_shape, activation='linear')(d2)
