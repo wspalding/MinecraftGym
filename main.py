@@ -14,7 +14,7 @@ env = gym.make('SpaceInvaders-v0')
 env.reset()
 
 # init wandb and connect it to gym
-wandb.init(project='space_inavders_1',
+wandb.init(project='space_inavders_lstm',
             monitor_gym=True)
 config = wandb.config
 # set config variable
@@ -26,7 +26,7 @@ config.training_epochs = 1
 env_shape = env.observation_space.shape
 action_shape = env.action_space.n
 
-agent = general_dqn.GeneralDQNAgent(space_invaders_model.create_SpaceInvaders_model, env)
+agent = general_dqn.GeneralDQNAgent(space_invaders_model.create_SpaceInvaders_lstm, env)
 
 model_save_file = '/space_invaders_1.h5'
 
