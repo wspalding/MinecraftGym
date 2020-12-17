@@ -23,12 +23,9 @@ def create_SpaceInvaders_model(env_shape, action_shape, **kwargs):
                             padding='same', 
                             activation='relu')(c3)
     fl = Flatten()(c4)
-    #d1 = Dense(64, activation='relu')(fl)
-    print(fl.shape)
-    r = Reshape(-1,)(fl)
-    lstm1 = LSTM(3)(fl)
-    #d2 = Dense(256, activation='relu')(d1)
-    d2 = Dense(256, activation='relu')(lstm1)
+    d1 = Dense(64, activation='relu')(fl)
+    d2 = Dense(256, activation='relu')(d1)
+    d2 = Dense(256, activation='relu')(d2)
     d2 = Dense(512, activation='relu')(d2)
     d2 = Dense(64, activation='relu')(d2)
     output_layer = Dense(action_shape, activation='linear')(d2)
@@ -74,16 +71,16 @@ def create_SpaceInvaders_model(env_shape, action_shape, **kwargs):
 def create_SpaceInvaders_lstm(env_shape, action_shape, **kwargs):
     # Define layers
     input_layer = Input(shape=env_shape)
-    c1 = Conv2D(16, (10,10), strides=(1,1), 
+    c1 = Conv2D(16, (3,3), strides=(1,1), 
                             padding='same', 
                             activation='relu')(input_layer)
-    c2 = Conv2D(32, (5,5), strides=(1,1), 
+    c2 = Conv2D(32, (4,4), strides=(1,1), 
                             padding='same', 
                             activation='relu')(c1)
-    c3 = Conv2D(64, (4,4), strides=(1,1), 
+    c3 = Conv2D(64, (5,5), strides=(1,1), 
                             padding='same', 
                             activation='relu')(c2)
-    c4 = Conv2D(16, (3,3), strides=(1,1), 
+    c4 = Conv2D(16, (10,10), strides=(10,10), 
                             padding='same', 
                             activation='relu')(c3)
     
@@ -91,12 +88,12 @@ def create_SpaceInvaders_lstm(env_shape, action_shape, **kwargs):
     td = TimeDistributed(fl)(c4)
     #d1 = Dense(64, activation='relu')(fl)
     lstm1 = LSTM(16, return_sequences=True)(td)
-    lstm2 = LSTM(16)(lstm1)
+    lstm2 = LSTM(64, return_sequences=True)(lstm1)
     #d2 = Dense(256, activation='relu')(d1)
-    d3 = Dense(256, activation='relu')(lstm2)
-    d4 = Dense(512, activation='relu')(d3)
-    d5 = Dense(64, activation='relu')(d4)
-    output_layer = Dense(action_shape, activation='linear')(d5)
+    lstm3 = LSTM(256, return_sequences=True)(lstm2)
+    lstm4 = LSTM(512, return_sequences=True)(lstm3)
+    lstm5 = LSTM(64)(lstm4)
+    output_layer = Dense(action_shape, activation='linear')(lstm5)
 
     model = Model(input_layer, output_layer, name='CartPol_model')
     
