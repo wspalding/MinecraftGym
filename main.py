@@ -4,6 +4,7 @@ import numpy as np
 import os
 
 from ml_agents import general_dqn
+from ml_agents import cartpol_A3C
 
 from ml_models import space_invaders_model
 from ml_models import cartpol_model
