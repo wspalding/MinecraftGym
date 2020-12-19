@@ -55,6 +55,9 @@ class GeneralDQNAgent():
             # target = reward + gamma * best_target_reward
             # model.fit(state, target)
 
+
+        self.callbacks = kwargs.get('callbacks', [])
+
     def load_model(self, model_func, env_shape, action_shape, file=None):
         if file:
             self.model = load_model(file)
@@ -81,7 +84,10 @@ class GeneralDQNAgent():
 
         states, targets = self.calculate_targets(sample_batch, cur_epoch=kwargs.get('ce'))
 
-        self.model.fit(np.squeeze(states), targets, epochs=training_epochs, verbose=0)
+        self.model.fit(np.squeeze(states), targets, 
+                            epochs=training_epochs, 
+                            verbose=0,
+                            callbacks=self.callbacks)
 
         self.exploration_rate = max(self.exploration_rate_min, 
                                     self.exploration_rate * self.exploration_rate_decay)
