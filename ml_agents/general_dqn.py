@@ -1,12 +1,16 @@
 import numpy as np
 import random
 
-from ml_models.cartpol_model import create_CartPol_model_from_config
 from collections import deque
+
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import Huber, MeanSquaredError
 
 
 class GeneralDQNAgent():
-    def __init__(self, model_func, env, **kwargs):
+    def __init__(self, model, env, **kwargs):
         # get env info
         self.environment = env
         env_shape = env.observation_space.shape
@@ -14,7 +18,7 @@ class GeneralDQNAgent():
             # environment input and output shapes
 
         # load models
-        self.load_model(model_func, env_shape, action_shape, file=kwargs.get('model_file'))
+        self.load_model(model, env_shape, action_shape, **kwargs)
         self.target_update_count = 0
             # load models:
             # self.model is our main model used to make predictions
@@ -58,11 +62,39 @@ class GeneralDQNAgent():
 
         self.callbacks = kwargs.get('callbacks', [])
 
-    def load_model(self, model_func, env_shape, action_shape, file=None):
-        if file:
-            self.model = load_model(file)
+    def load_model(self, model, env_shape, action_shape, **kwargs):
+        input_layer = Input(shape=env_shape)
+        m = model(input_layer)
+        output = Dense(action_shape, activation='linear')(m)
+
+        self.model = Model(input_layer, output, name='dqn_model')
+    
+        # create loss
+        delta = kwargs.get('loss_delta', 1.0)
+            # delta loss is the value at which
+            # the huber loss function transitions from
+            # a quadratic function to a linear funtion
+        loss_function = kwargs.get('loss_function', 'huber')
+        if loss_function == 'huber':
+            loss = Huber(delta=delta)
+        elif loss_function == 'mse':
+            loss = MeanSquaredError()
         else:
-            self.model = model_func(env_shape, action_shape)
+            loss = Huber(delta=delta)
+
+            
+        # create optimizer
+        LR = kwargs.get('LR', 0.001)
+            # learning rate
+        LR_decay1 = kwargs.get('LR_decay1', 0.9)
+            # Learning rate decay
+        LR_decay2 = kwargs.get('LR_decay2', 0.999)
+            # The exponential decay rate for the 2nd moment estimates
+        optimizer = Adam(learning_rate=LR, beta_1=LR_decay1, beta_2=LR_decay2)
+
+        self.model.compile(optimizer=optimizer, loss=loss, metrics=kwargs.get('metrics'))
+        print(self.model.summary())
+
 
     def get_action(self, state, explore=False):
         if explore and np.random.rand() <= self.exploration_rate:
