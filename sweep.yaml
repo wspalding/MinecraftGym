@@ -1,0 +1,65 @@
+
+# ! name –
+# name of sweep
+name: test_sweep
+
+# ! Program – 
+# a training script that defines your model architecture, 
+# trains the model, and contains either the WandbCallback(), 
+# or wandb.log
+program: train.py
+
+
+# ! Method – 
+# The search strategy used by the sweep.
+method: random
+
+# ? Grid Search – 
+# Iterates over every combination of hyperparameter values.
+# ? Random Search – 
+# Iterates over randomly chosen combinations of 
+# hyperparameter values.
+# ? Bayesian Search – 
+# Creates a probabilistic model that maps hyperparameters 
+# to probability of a metric score, 
+# and chooses parameters with high probability of 
+# improving the metric. 
+# The objective of Bayesian optimization is to spend 
+# more time in picking the hyperparameter values, 
+# but in doing so trying out fewer hyperparameter values.
+
+# ! Metric – 
+# This is the metric the sweeps are attempting to optimize. 
+# Metrics can take a name (this metric should be logged by 
+# your training script) and a goal (maximize or minimize).
+metric:
+  name: average_total_reward
+  goal: maximize
+
+
+# ! Parameters – 
+# The hyperparameter names, and either discreet values, 
+# max and min values or distributions from which to pull 
+# values to sweep over.
+parameters:
+  learning-rate:
+    min: 0.00001
+    max: 0.1
+  # optimizer:
+  #   values: ["adam", "sgd"]
+  # hidden_layer_size:
+  #   values: [96, 128, 148]
+  # epochs:
+  #   value: 27
+
+
+# ! Early_terminate – 
+# The is the stopping strategy for determining when to 
+# kill off poorly performing runs, and try more combinations 
+# faster. We offer custom scheduling algorithms like HyperBand.
+early_terminate:
+  type: hyperband
+  s: 2
+  eta: 3
+  max_iter: 27
+
