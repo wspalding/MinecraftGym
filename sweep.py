@@ -12,10 +12,10 @@ sweep_config = {
             'values': [0.01]
         },
         'epochs': {
-            'values': [3000, 5000, 7500, 10000]
+            'values': [5000]
         },
         'batch_size': {
-            'values': [1, 32, 64]
+            'values': [64, 128]
         },
         'training_epochs': {
             'values': [1, 10]
@@ -23,9 +23,12 @@ sweep_config = {
         'loss_function': {
             'values': ['mse', 'huber']
         },
-        # 'optimizer': {
-        #     'values': ['adam', 'sgd']
-        # }
+        'optimizer': {
+            'values': ['adam', 'sgd']
+        },
+        'frame_skipping': {
+            'values': [1, 4, 10]
+        },
     },
     'early_terminate': {
         'type': 'hyperband',

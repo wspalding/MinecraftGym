@@ -22,7 +22,7 @@ def train():
     config_defaults = {
         'learning_rate': 0.01,
         'epochs': 10,
-        'batch_size': 32,
+        'batch_size': 64,
         'training_epochs': 1,
         'loss_function': 'huber',
         'optimizer': 'adam'
